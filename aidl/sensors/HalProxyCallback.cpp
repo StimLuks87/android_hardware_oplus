@@ -67,7 +67,6 @@ std::vector<V2_1::Event> HalProxyCallbackBase::processEvents(const std::vector<V
                                                              size_t* numWakeupEvents) const {
     *numWakeupEvents = 0;
     std::vector<V2_1::Event> eventsOut;
-    const char* aodLightModeNode = "/sys/kernel/oplus_display/aod_light_mode_set";
     for (V2_1::Event event : events) {
         event.sensorHandle = setSubHalIndex(event.sensorHandle, mSubHalIndex);
         if (event.sensorType == V2_1::SensorType::DYNAMIC_SENSOR_META) {
@@ -76,22 +75,9 @@ std::vector<V2_1::Event> HalProxyCallbackBase::processEvents(const std::vector<V
         }
         const V2_1::SensorInfo& sensor = mCallback->getSensorInfo(event.sensorHandle);
 
-        if (sensor.type == V2_1::SensorType::GLANCE_GESTURE
-            && event.u.scalar != 2) {
-            continue;
-        }
-
         if (sensor.type == V2_1::SensorType::PICK_UP_GESTURE
             && event.u.scalar != 0) {
             continue;
-        }
-
-        if (sensor.typeAsString == "qti.sensor.lux_aod") {
-            std::ofstream nodeFile(aodLightModeNode);
-            if (nodeFile.is_open()) {
-                nodeFile << !event.u.scalar;
-                nodeFile.close();
-            }
         }
 
         if ((sensor.flags & V1_0::SensorFlagBits::WAKE_UP) != 0) {
